@@ -1,11 +1,11 @@
-package storm.trident.state.mysql;
+package storm.trident.state.postgresql;
 
 import java.io.Serializable;
 
 import storm.trident.state.StateType;
 
 @SuppressWarnings("serial")
-public class MysqlStateConfig implements Serializable {
+public class PostgresqlStateConfig implements Serializable {
 
 	private String url;
 	private String table;

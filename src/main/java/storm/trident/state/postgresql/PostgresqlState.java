@@ -1,4 +1,4 @@
-package storm.trident.state.mysql;
+package storm.trident.state.postgresql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -30,16 +30,16 @@ import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 
-public class MysqlState<T> implements IBackingMap<T> {
+public class PostgresqlState<T> implements IBackingMap<T> {
 
 	private Connection connection;
-	private MysqlStateConfig config;
-	private static final Logger logger = Logger.getLogger(MysqlState.class);
+	private PostgresqlStateConfig config;
+	private static final Logger logger = Logger.getLogger(PostgresqlState.class);
 
-	MysqlState(final MysqlStateConfig config) {
+	PostgresqlState(final PostgresqlStateConfig config) {
 		this.config = config;
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
+			Class.forName("com.postgresql.jdbc.Driver");
 			connection = DriverManager.getConnection(config.getUrl());
 		} catch (final SQLException | ClassNotFoundException ex) {
 			logger.error("Failed to establish DB connection", ex);
@@ -48,17 +48,17 @@ public class MysqlState<T> implements IBackingMap<T> {
 
 	/**
 	 * factory method for the factory
-	 * 
+	 *
 	 * @param config
 	 * @return
 	 */
-	public static Factory newFactory(final MysqlStateConfig config) {
+	public static Factory newFactory(final PostgresqlStateConfig config) {
 		return new Factory(config);
 	}
 
 	/**
-	 * multiget implementation for mongodb
-	 * 
+	 * multiget implementation for postgresql
+	 *
 	 */
 	@Override
 	@SuppressWarnings({"unchecked","rawtypes"})
@@ -103,7 +103,7 @@ public class MysqlState<T> implements IBackingMap<T> {
 
 	/**
 	 * multiput implementation for mongodb
-	 * 
+	 *
 	 */
 	@Override
 	public void multiPut(final List<List<Object>> keys, final List<T> values) {
@@ -199,7 +199,7 @@ public class MysqlState<T> implements IBackingMap<T> {
 
 	/**
 	 * run the multi get query, passing in the list of keys and returning key tuples mapped to value tuples
-	 * 
+	 *
 	 * @param sql
 	 * @param keys
 	 * @return
@@ -287,16 +287,16 @@ public class MysqlState<T> implements IBackingMap<T> {
 
 	@SuppressWarnings("serial")
 	static class Factory implements StateFactory {
-		private MysqlStateConfig config;
+		private PostgresqlStateConfig config;
 
-		Factory(final MysqlStateConfig config) {
+		Factory(final PostgresqlStateConfig config) {
 			this.config = config;
 		}
 
 		@Override
 		@SuppressWarnings({"rawtypes","unchecked"})
 		public State makeState(final Map conf, final IMetricsContext context, final int partitionIndex, final int numPartitions) {
-			final CachedMap map = new CachedMap(new MysqlState(config), config.getCacheSize());
+			final CachedMap map = new CachedMap(new PostgresqlState(config), config.getCacheSize());
 			switch (config.getType()) {
 			case OPAQUE:
 				return OpaqueMap.build(map);
