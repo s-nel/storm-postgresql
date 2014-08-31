@@ -1,4 +1,4 @@
-package storm.trident.mysql;
+package storm.trident.postgresql;
 
 import java.util.List;
 import java.util.Map;
@@ -13,8 +13,8 @@ import storm.trident.operation.CombinerAggregator;
 import storm.trident.operation.TridentCollector;
 import storm.trident.spout.IBatchSpout;
 import storm.trident.state.StateType;
-import storm.trident.state.mysql.MysqlState;
-import storm.trident.state.mysql.MysqlStateConfig;
+import storm.trident.state.postgresql.PostgresqlState;
+import storm.trident.state.postgresql.PostgresqlStateConfig;
 import storm.trident.tuple.TridentTuple;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
@@ -25,7 +25,7 @@ import clojure.lang.Numbers;
 
 import com.google.common.collect.Lists;
 
-public class MysqlStateTopology {
+public class PostgresqlStateTopology {
 
 	@SuppressWarnings("serial")
 	static class RandomTupleSpout implements IBatchSpout {
@@ -105,14 +105,14 @@ public class MysqlStateTopology {
 
 	/**
 	 * storm local cluster executable
-	 * 
+	 *
 	 * @param args
 	 */
 	public static void main(final String[] args) {
-		final String dburl = "jdbc:mysql://mysql1:3306/storm_test?user=pmp&password=pmp";
+		final String dburl = "jdbc:postgresql://localhost:5432/storm_test?user=dkatten";
 		final TridentTopology topology = new TridentTopology();
 		final GroupedStream stream = topology.newStream("test", new RandomTupleSpout()).each(new Fields(), new ThroughputLoggingFilter()).groupBy(new Fields("a"));
-		final MysqlStateConfig config = new MysqlStateConfig();
+		final PostgresqlStateConfig config = new PostgresqlStateConfig();
 		{
 			config.setUrl(dburl);
 			config.setTable("state");
@@ -121,9 +121,9 @@ public class MysqlStateTopology {
 			config.setType(StateType.NON_TRANSACTIONAL);
 			config.setCacheSize(1000);
 		}
-		stream.persistentAggregate(MysqlState.newFactory(config), new Fields("b", "c"), new CountSumSum(), new Fields("sum"));
+		stream.persistentAggregate(PostgresqlState.newFactory(config), new Fields("b", "c"), new CountSumSum(), new Fields("sum"));
 
-		final MysqlStateConfig config1 = new MysqlStateConfig();
+		final PostgresqlStateConfig config1 = new PostgresqlStateConfig();
 		{
 			config1.setUrl(dburl);
 			config1.setTable("state_transactional");
@@ -132,9 +132,9 @@ public class MysqlStateTopology {
 			config1.setType(StateType.TRANSACTIONAL);
 			config1.setCacheSize(1000);
 		}
-		stream.persistentAggregate(MysqlState.newFactory(config1), new Fields("b", "c"), new CountSumSum(), new Fields("sum"));
-		
-		final MysqlStateConfig config2 = new MysqlStateConfig();
+		stream.persistentAggregate(PostgresqlState.newFactory(config1), new Fields("b", "c"), new CountSumSum(), new Fields("sum"));
+
+		final PostgresqlStateConfig config2 = new PostgresqlStateConfig();
 		{
 			config2.setUrl(dburl);
 			config2.setTable("state_opaque");
@@ -143,7 +143,7 @@ public class MysqlStateTopology {
 			config2.setType(StateType.OPAQUE);
 			config2.setCacheSize(1000);
 		}
-		stream.persistentAggregate(MysqlState.newFactory(config2), new Fields("b", "c"), new CountSumSum(), new Fields("sum"));
+		stream.persistentAggregate(PostgresqlState.newFactory(config2), new Fields("b", "c"), new CountSumSum(), new Fields("sum"));
 
 		final LocalCluster cluster = new LocalCluster();
 		cluster.submitTopology("test", new Config(), topology.build());
