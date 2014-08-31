@@ -129,20 +129,64 @@ public class PostgresqlState<T> implements IBackingMap<T> {
       default:
         paramCount += (config.getKeyColumns().length + config.getValueColumns().length);
       }
-      final StringBuilder queryBuilder = new StringBuilder().append("INSERT INTO ")
-        .append(config.getTable())
-        .append("(")
-        .append(buildColumns())
-        .append(") VALUES ")
-        .append(Joiner.on(",").join(repeat("(" + Joiner.on(",").join(repeat("?", paramCount)) + ")", pkeys.size())))
-        .append(" ON DUPLICATE KEY UPDATE ")
-        .append(Joiner.on(",").join(Lists.transform(getValueColumns(), new Function<String, String>() {
-          @Override
-          public String apply(final String col) {
-            return col + " = VALUES(" + col + ")";
-          }
-        }))); // for every value column, constructs "valcol = VALUE(valcol)", joined by commas
-      // run the update
+
+      final StringBuilder queryBuilder = new StringBuilder()
+        .append("WITH ")
+          .append(" new_values (")
+          .append(buildColumns())
+          .append(") AS (")
+            .append("VALUES ")
+            .append(Joiner.on(", ").join(repeat("(" + Joiner.on(",").join(repeat("?", paramCount)) + ")", pkeys.size())))
+          .append("),")
+          .append("updated AS (")
+            .append("UPDATE ").append(config.getTable()).append(" t ")
+            .append("SET ")
+             .append(Joiner.on(", ").join(Lists.transform(getValueColumns(), new Function<String, String>() {
+                @Override
+                public String apply(final String col) {
+                  return col + " = new_values." + col;
+                }
+              })))
+            .append(" FROM new_values ")
+            .append("WHERE (")
+            .append(Joiner.on(", ").join(Lists.transform(Arrays.asList(config.getKeyColumns()), new Function<String, String>() {
+               @Override
+               public String apply(final String col) {
+                 return "t." +col + " = new_values." + col;
+               }
+             })))
+            .append(") ")
+            .append("RETURNING t.*")
+          .append(") ")
+        .append("INSERT INTO ").append(config.getTable())
+        .append("(").append(buildColumns()).append(") ")
+        .append("SELECT ").append(buildColumns()).append(" ")
+        .append("FROM new_values ")
+        .append("WHERE NOT EXISTS (")
+          .append("SELECT 1 FROM updated ")
+          .append("WHERE (")
+            .append(Joiner.on(",").join(Lists.transform(Arrays.asList(config.getKeyColumns()), new Function<String, String>() {
+               @Override
+               public String apply(final String col) {
+                 return "updated." +col + " = new_values." + col;
+               }
+             })))
+          .append(")")
+        .append(")");
+      // final StringBuilder queryBuilder = new StringBuilder().append("INSERT INTO ")
+      //   .append(config.getTable())
+      //   .append("(")
+      //   .append(buildColumns())
+      //   .append(") VALUES ")
+      //   .append(Joiner.on(",").join(repeat("(" + Joiner.on(",").join(repeat("?", paramCount)) + ")", pkeys.size())))
+      //   .append(" ON DUPLICATE KEY UPDATE ")
+      //   .append(Joiner.on(",").join(Lists.transform(getValueColumns(), new Function<String, String>() {
+      //     @Override
+      //     public String apply(final String col) {
+      //       return col + " = VALUES(" + col + ")";
+      //     }
+      //   }))); // for every value column, constructs "valcol = VALUE(valcol)", joined by commas
+      // // run the update
       final List<Object> params = flattenPutParams(pkeys, pvalues);
       PreparedStatement ps = null;
       int i = 0;
