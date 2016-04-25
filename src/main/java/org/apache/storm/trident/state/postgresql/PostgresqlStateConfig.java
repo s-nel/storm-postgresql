@@ -1,8 +1,9 @@
-package storm.trident.state.postgresql;
+package org.apache.storm.trident.state.postgresql;
 
 import java.io.Serializable;
 
-import storm.trident.state.StateType;
+import org.apache.storm.trident.state.StateType;
+
 
 @SuppressWarnings("serial")
 public class PostgresqlStateConfig implements Serializable {

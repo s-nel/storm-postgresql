@@ -5,25 +5,24 @@ import java.util.Map;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
+import org.apache.storm.Config;
+import org.apache.storm.LocalCluster;
+import org.apache.storm.shade.com.google.common.collect.Lists;
+import org.apache.storm.task.TopologyContext;
+import org.apache.storm.trident.TridentTopology;
+import org.apache.storm.trident.fluent.GroupedStream;
+import org.apache.storm.trident.operation.BaseFilter;
+import org.apache.storm.trident.operation.CombinerAggregator;
+import org.apache.storm.trident.operation.TridentCollector;
+import org.apache.storm.trident.spout.IBatchSpout;
+import org.apache.storm.trident.state.StateType;
+import org.apache.storm.trident.state.postgresql.PostgresqlState;
+import org.apache.storm.trident.state.postgresql.PostgresqlStateConfig;
+import org.apache.storm.trident.tuple.TridentTuple;
+import org.apache.storm.tuple.Fields;
+import org.apache.storm.tuple.Values;
 
-import storm.trident.TridentTopology;
-import storm.trident.fluent.GroupedStream;
-import storm.trident.operation.BaseFilter;
-import storm.trident.operation.CombinerAggregator;
-import storm.trident.operation.TridentCollector;
-import storm.trident.spout.IBatchSpout;
-import storm.trident.state.StateType;
-import storm.trident.state.postgresql.PostgresqlState;
-import storm.trident.state.postgresql.PostgresqlStateConfig;
-import storm.trident.tuple.TridentTuple;
-import backtype.storm.Config;
-import backtype.storm.LocalCluster;
-import backtype.storm.task.TopologyContext;
-import backtype.storm.tuple.Fields;
-import backtype.storm.tuple.Values;
 import clojure.lang.Numbers;
-
-import com.google.common.collect.Lists;
 
 public class PostgresqlStateTopology {
 
@@ -72,7 +71,8 @@ public class PostgresqlStateTopology {
 		private Long start = System.nanoTime();
 		private Long last = System.nanoTime();
 
-		public boolean isKeep(final TridentTuple tuple) {
+		@Override
+        public boolean isKeep(final TridentTuple tuple) {
 			count += 1;
 			final long now = System.nanoTime();
 			if (now - last > 5000000000L) { // emit every 5 seconds

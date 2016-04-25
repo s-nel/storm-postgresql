@@ -1,4 +1,4 @@
-package storm.trident.state.postgresql;
+package org.apache.storm.trident.state.postgresql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,25 +12,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.postgresql.Driver;
-
 import org.apache.log4j.Logger;
+import org.apache.storm.shade.com.google.common.base.Function;
+import org.apache.storm.shade.com.google.common.base.Joiner;
+import org.apache.storm.shade.com.google.common.collect.Lists;
+import org.apache.storm.task.IMetricsContext;
+import org.apache.storm.trident.state.OpaqueValue;
+import org.apache.storm.trident.state.State;
+import org.apache.storm.trident.state.StateFactory;
+import org.apache.storm.trident.state.StateType;
+import org.apache.storm.trident.state.TransactionalValue;
+import org.apache.storm.trident.state.map.CachedMap;
+import org.apache.storm.trident.state.map.IBackingMap;
+import org.apache.storm.trident.state.map.NonTransactionalMap;
+import org.apache.storm.trident.state.map.OpaqueMap;
+import org.apache.storm.trident.state.map.TransactionalMap;
 
-import storm.trident.state.OpaqueValue;
-import storm.trident.state.State;
-import storm.trident.state.StateFactory;
-import storm.trident.state.StateType;
-import storm.trident.state.TransactionalValue;
-import storm.trident.state.map.CachedMap;
-import storm.trident.state.map.IBackingMap;
-import storm.trident.state.map.NonTransactionalMap;
-import storm.trident.state.map.OpaqueMap;
-import storm.trident.state.map.TransactionalMap;
-import backtype.storm.task.IMetricsContext;
-
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 
 public class PostgresqlState<T> implements IBackingMap<T> {
 
