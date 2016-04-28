@@ -17,6 +17,7 @@ import org.apache.storm.shade.com.google.common.base.Function;
 import org.apache.storm.shade.com.google.common.base.Joiner;
 import org.apache.storm.shade.com.google.common.collect.Lists;
 import org.apache.storm.task.IMetricsContext;
+import org.apache.storm.topology.FailedException;
 import org.apache.storm.trident.state.OpaqueValue;
 import org.apache.storm.trident.state.State;
 import org.apache.storm.trident.state.StateFactory;
@@ -195,7 +196,7 @@ public class PostgresqlState<T> implements IBackingMap<T> {
         ps.execute();
       } catch (final SQLException ex) {
         logger.error("Multiput update failed", ex);
-        throw new RuntimeException(ex);
+        throw new FailedException(ex);
       } finally {
         if (ps != null) {
           try {
