@@ -85,10 +85,10 @@ public class PostgresqlStateConfig implements Serializable {
 	}
 
 	public String[] getKeyTypes() {
-        return keyTypes;
-    }
+		return keyTypes;
+	}
 
-    public void setKeyTypes(String[] keyTypes) {
-        this.keyTypes = keyTypes;
-    }
+	public void setKeyTypes(String[] keyTypes) {
+		this.keyTypes = keyTypes;
+	}
 }
