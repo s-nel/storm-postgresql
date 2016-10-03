@@ -1,5 +1,7 @@
 # storm-postgresql
 
+[![Snacktrace Score](http://snacktrace.com/artifacts/com.snacktrace/storm-postgresql/latest/score/image "Snacktrace Score")](http://snacktrace.com/artifacts/com.snacktrace/storm-postgresql/latest)
+
 A Trident state implementation for PostgreSQL that supports non-transactional, transactional, and opaque-transactional modes
 
 ## Maven Coordinates
